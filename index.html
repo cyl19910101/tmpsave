@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Json Diff</title>
+    <style>
+        textarea {
+            width  : 500px;
+            height : 600px;
+        }
+    </style>
+</head>
+<body>
+<textArea id="first"></textArea>
+<textArea id="second"></textArea>
+<textarea id="result" disabled placeholder="result"></textarea>
+<button>parse</button>
+<script>
+    (function () {
+        "use strict";
+        var btn = document.getElementsByTagName ( 'button' )[ 0 ];
+        btn.addEventListener ( 'click', function ( e ) {
+            var firstContent  = document.getElementById ( 'first' ).value;
+            var secondContent = document.getElementById ( 'second' ).value;
+
+            try {
+                var first  = JSON.parse ( firstContent );
+                var second = JSON.parse ( secondContent );
+
+                var content = {
+                    "first"  : first,
+                    "second" : second
+                };
+
+                ajax ( content );
+
+            } catch ( e ) {
+                alert ( 'Please input the fucking correct json!' );
+            }
+        } );
+
+        var ajax = function ( content ) {
+            document.getElementById ( 'result' ).textContent = '';
+
+            var req = new XMLHttpRequest;
+            req.open ( 'post', 'api/jsons' );
+            req.setRequestHeader ( 'Accept', 'application/json' );
+            req.onreadystatechange = function () {
+                if ( req.readyState === 4 ) {
+                    if ( req.status >= 200 && req.status < 300 || req.status === 304 ) {
+                        var type = req.getResponseHeader ( "Content-Type" );
+                        if ( type ) {
+                            if ( type.match ( /application\/json/ ) ) {
+                                var str = JSON.stringify ( JSON.parse ( req.responseText ), null, 2 );
+
+                                document.getElementById ( 'result' ).textContent = str;
+
+                            }
+                        }
+                    } else {
+                        alert ( 'error occur.' );
+                    }
+                }
+            };
+            req.setRequestHeader ( 'Content-Type', 'application/json' );
+            req.send ( JSON.stringify ( content ) );
+        }
+    } ());
+</script>
+</body>
+</html>
